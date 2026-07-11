@@ -1,8 +1,10 @@
-public class WorkoutPlan {
+import java.util.Objects;
 
-    private String type;
-    private int duration;
-    private int calories;
+public abstract class WorkoutPlan {
+
+    protected String type;
+    protected int duration;
+    protected int calories;
 
     public WorkoutPlan(String type, int duration, int calories) {
         this.type = type;
@@ -18,7 +20,25 @@ public class WorkoutPlan {
     public void setDuration(int duration) { this.duration = duration; }
     public void setCalories(int calories) { this.calories = calories; }
 
+    public abstract String getDetails();
+
+    @Override
     public String toString() {
-        return "WorkoutPlan{type=" + type + ", duration=" + duration + " min, calories=" + calories + "}";
+        return type + ", " + duration + " min, " + calories + " kcal, " + getDetails();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof WorkoutPlan)) return false;
+        WorkoutPlan other = (WorkoutPlan) obj;
+        return duration == other.duration
+                && calories == other.calories
+                && type.equals(other.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, duration, calories);
     }
 }

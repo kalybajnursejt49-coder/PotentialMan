@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class FitnessApp {
@@ -24,6 +26,7 @@ public class FitnessApp {
             System.out.println("1 - Пользователь 1");
             System.out.println("2 - Пользователь 2");
             System.out.println("3 - Сравнить пользователей");
+            System.out.println("4 - Работа с пулом тренировок");
             System.out.println("0 - Выход");
             System.out.print("Ваш выбор: ");
             int choice = scanner.nextInt();
@@ -37,6 +40,8 @@ public class FitnessApp {
                 showMenu(scanner, health, user2);
             } else if (choice == 3) {
                 compareUsers(health, user1, user2);
+            } else if (choice == 4) {
+                showDataPoolMenu(scanner, user1, user2);
             } else {
                 System.out.println("Некорректный выбор");
             }
@@ -65,14 +70,29 @@ public class FitnessApp {
         scanner.nextLine();
 
         for (int i = 0; i < count; i++) {
+            System.out.println("1 - Cardio");
+            System.out.println("2 - Strength");
             System.out.print("Тип тренировки: ");
-            String type = scanner.nextLine();
+            int typeChoice = scanner.nextInt();
+
             System.out.print("Длительность (мин): ");
             int duration = scanner.nextInt();
             System.out.print("Сожжено калорий: ");
             int calories = scanner.nextInt();
-            scanner.nextLine();
-            user.addWorkout(new WorkoutPlan(type, duration, calories));
+
+            if (typeChoice == 1) {
+                System.out.print("Дистанция (км): ");
+                double distance = scanner.nextDouble();
+                scanner.nextLine();
+                user.addWorkout(new CardioWorkout(duration, calories, distance));
+            } else {
+                System.out.print("Количество подходов: ");
+                int sets = scanner.nextInt();
+                System.out.print("Количество повторений: ");
+                int reps = scanner.nextInt();
+                scanner.nextLine();
+                user.addWorkout(new StrengthWorkout(duration, calories, sets, reps));
+            }
         }
     }
 
@@ -136,6 +156,81 @@ public class FitnessApp {
             System.out.println("Пользователь 2 сжёг больше калорий на тренировках");
         } else {
             System.out.println("Пользователи сожгли одинаковое количество калорий");
+        }
+    }
+
+    private static void showDataPoolMenu(Scanner scanner, User user1, User user2) {
+        List<WorkoutPlan> pool = new ArrayList<>();
+        pool.addAll(user1.getWorkouts());
+        pool.addAll(user2.getWorkouts());
+
+        System.out.println();
+        System.out.println("1 - Показать все тренировки");
+        System.out.println("2 - Фильтр по минимальным калориям");
+        System.out.println("3 - Поиск по типу тренировки");
+        System.out.println("4 - Сортировка по калориям");
+        System.out.print("Ваш выбор: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        if (choice == 1) {
+            printPool(pool);
+        } else if (choice == 2) {
+            System.out.print("Минимум калорий: ");
+            int min = scanner.nextInt();
+            scanner.nextLine();
+            printPool(filterByMinCalories(pool, min));
+        } else if (choice == 3) {
+            System.out.print("Тип (Cardio/Strength): ");
+            String type = scanner.nextLine();
+            printPool(searchByType(pool, type));
+        } else if (choice == 4) {
+            sortByCalories(pool);
+            printPool(pool);
+        } else {
+            System.out.println("Некорректный выбор");
+        }
+    }
+
+    private static void printPool(List<WorkoutPlan> pool) {
+        if (pool.isEmpty()) {
+            System.out.println("Ничего не найдено");
+            return;
+        }
+        for (WorkoutPlan plan : pool) {
+            System.out.println(plan);
+        }
+    }
+
+    private static List<WorkoutPlan> filterByMinCalories(List<WorkoutPlan> pool, int min) {
+        List<WorkoutPlan> result = new ArrayList<>();
+        for (WorkoutPlan plan : pool) {
+            if (plan.getCalories() >= min) {
+                result.add(plan);
+            }
+        }
+        return result;
+    }
+
+    private static List<WorkoutPlan> searchByType(List<WorkoutPlan> pool, String type) {
+        List<WorkoutPlan> result = new ArrayList<>();
+        for (WorkoutPlan plan : pool) {
+            if (plan.getType().equalsIgnoreCase(type)) {
+                result.add(plan);
+            }
+        }
+        return result;
+    }
+
+    private static void sortByCalories(List<WorkoutPlan> pool) {
+        for (int i = 0; i < pool.size() - 1; i++) {
+            for (int j = 0; j < pool.size() - 1 - i; j++) {
+                if (pool.get(j).getCalories() > pool.get(j + 1).getCalories()) {
+                    WorkoutPlan temp = pool.get(j);
+                    pool.set(j, pool.get(j + 1));
+                    pool.set(j + 1, temp);
+                }
+            }
         }
     }
 }
