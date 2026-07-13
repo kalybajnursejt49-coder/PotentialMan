@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class User {
 
@@ -40,7 +41,24 @@ public class User {
         return total;
     }
 
+    @Override
     public String toString() {
         return "User{age=" + age + ", weight=" + weight + ", height=" + height + ", gender=" + gender + "}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof User)) return false;
+        User other = (User) obj;
+        return age == other.age
+                && Double.compare(weight, other.weight) == 0
+                && Double.compare(height, other.height) == 0
+                && gender.equalsIgnoreCase(other.gender);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(age, weight, height, gender.toLowerCase());
     }
 }

@@ -28,9 +28,7 @@ public class FitnessApp {
             System.out.println("3 - Сравнить пользователей");
             System.out.println("4 - Работа с пулом тренировок");
             System.out.println("0 - Выход");
-            System.out.print("Ваш выбор: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = readInt(scanner, "Ваш выбор: ");
 
             if (choice == 0) {
                 running = false;
@@ -51,46 +49,63 @@ public class FitnessApp {
         scanner.close();
     }
 
+    // Читает целое число с клавиатуры и не даёт программе упасть,
+    // если пользователь введёт не число.
+    private static int readInt(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            if (scanner.hasNextInt()) {
+                int value = scanner.nextInt();
+                scanner.nextLine();
+                return value;
+            } else {
+                System.out.println("Ошибка: введите целое число.");
+                scanner.nextLine();
+            }
+        }
+    }
+
+    // То же самое, но для дробных чисел (вес, рост, дистанция).
+    private static double readDouble(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            if (scanner.hasNextDouble()) {
+                double value = scanner.nextDouble();
+                scanner.nextLine();
+                return value;
+            } else {
+                System.out.println("Ошибка: введите число.");
+                scanner.nextLine();
+            }
+        }
+    }
+
     private static User readUser(Scanner scanner) {
-        System.out.print("Возраст: ");
-        int age = scanner.nextInt();
-        System.out.print("Вес (кг): ");
-        double weight = scanner.nextDouble();
-        System.out.print("Рост (см): ");
-        double height = scanner.nextDouble();
-        scanner.nextLine();
+        int age = readInt(scanner, "Возраст: ");
+        double weight = readDouble(scanner, "Вес (кг): ");
+        double height = readDouble(scanner, "Рост (см): ");
         System.out.print("Пол (M/F): ");
         String gender = scanner.nextLine();
         return new User(age, weight, height, gender);
     }
 
     private static void readWorkouts(Scanner scanner, User user) {
-        System.out.print("Сколько тренировок добавить: ");
-        int count = scanner.nextInt();
-        scanner.nextLine();
+        int count = readInt(scanner, "Сколько тренировок добавить: ");
 
         for (int i = 0; i < count; i++) {
             System.out.println("1 - Cardio");
             System.out.println("2 - Strength");
-            System.out.print("Тип тренировки: ");
-            int typeChoice = scanner.nextInt();
+            int typeChoice = readInt(scanner, "Тип тренировки: ");
 
-            System.out.print("Длительность (мин): ");
-            int duration = scanner.nextInt();
-            System.out.print("Сожжено калорий: ");
-            int calories = scanner.nextInt();
+            int duration = readInt(scanner, "Длительность (мин): ");
+            int calories = readInt(scanner, "Сожжено калорий: ");
 
             if (typeChoice == 1) {
-                System.out.print("Дистанция (км): ");
-                double distance = scanner.nextDouble();
-                scanner.nextLine();
+                double distance = readDouble(scanner, "Дистанция (км): ");
                 user.addWorkout(new CardioWorkout(duration, calories, distance));
             } else {
-                System.out.print("Количество подходов: ");
-                int sets = scanner.nextInt();
-                System.out.print("Количество повторений: ");
-                int reps = scanner.nextInt();
-                scanner.nextLine();
+                int sets = readInt(scanner, "Количество подходов: ");
+                int reps = readInt(scanner, "Количество повторений: ");
                 user.addWorkout(new StrengthWorkout(duration, calories, sets, reps));
             }
         }
@@ -101,9 +116,7 @@ public class FitnessApp {
         System.out.println("1 - BMI");
         System.out.println("2 - BMR и дневная норма");
         System.out.println("3 - Список тренировок");
-        System.out.print("Ваш выбор: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice = readInt(scanner, "Ваш выбор: ");
 
         if (choice == 1) {
             System.out.println("BMI: " + health.getBMICategory(user));
@@ -126,9 +139,7 @@ public class FitnessApp {
         System.out.println("1 - Похудение (lose)");
         System.out.println("2 - Набор массы (gain)");
         System.out.println("3 - Поддержание (maintain)");
-        System.out.print("Ваш выбор: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice = readInt(scanner, "Ваш выбор: ");
 
         if (choice == 1) return "lose";
         if (choice == 2) return "gain";
@@ -169,16 +180,12 @@ public class FitnessApp {
         System.out.println("2 - Фильтр по минимальным калориям");
         System.out.println("3 - Поиск по типу тренировки");
         System.out.println("4 - Сортировка по калориям");
-        System.out.print("Ваш выбор: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice = readInt(scanner, "Ваш выбор: ");
 
         if (choice == 1) {
             printPool(pool);
         } else if (choice == 2) {
-            System.out.print("Минимум калорий: ");
-            int min = scanner.nextInt();
-            scanner.nextLine();
+            int min = readInt(scanner, "Минимум калорий: ");
             printPool(filterByMinCalories(pool, min));
         } else if (choice == 3) {
             System.out.print("Тип (Cardio/Strength): ");
