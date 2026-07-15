@@ -27,6 +27,7 @@ public class FitnessApp {
             System.out.println("2 - Пользователь 2");
             System.out.println("3 - Сравнить пользователей");
             System.out.println("4 - Работа с пулом тренировок");
+            System.out.println("5 - Работа с базой данных");
             System.out.println("0 - Выход");
             int choice = readInt(scanner, "Ваш выбор: ");
 
@@ -40,6 +41,8 @@ public class FitnessApp {
                 compareUsers(health, user1, user2);
             } else if (choice == 4) {
                 showDataPoolMenu(scanner, user1, user2);
+            } else if (choice == 5) {
+                showDatabaseMenu(scanner, user1, user2);
             } else {
                 System.out.println("Некорректный выбор");
             }
@@ -49,8 +52,6 @@ public class FitnessApp {
         scanner.close();
     }
 
-    // Читает целое число с клавиатуры и не даёт программе упасть,
-    // если пользователь введёт не число.
     private static int readInt(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -65,7 +66,6 @@ public class FitnessApp {
         }
     }
 
-    // То же самое, но для дробных чисел (вес, рост, дистанция).
     private static double readDouble(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -238,6 +238,49 @@ public class FitnessApp {
                     pool.set(j + 1, temp);
                 }
             }
+        }
+    }
+
+    private static void showDatabaseMenu(Scanner scanner, User user1, User user2) {
+        System.out.println();
+        System.out.println("1 - Сохранить пользователя 1 и его тренировки в базу");
+        System.out.println("2 - Сохранить пользователя 2 и его тренировки в базу");
+        System.out.println("3 - Показать всех пользователей из базы");
+        System.out.println("4 - Показать тренировки пользователя из базы по id");
+        System.out.println("5 - Обновить вес пользователя в базе");
+        System.out.println("6 - Удалить тренировку из базы по id");
+        int choice = readInt(scanner, "Ваш выбор: ");
+
+        if (choice == 1) {
+            saveUserToDatabase(user1);
+        } else if (choice == 2) {
+            saveUserToDatabase(user2);
+        } else if (choice == 3) {
+            List<User> users = FitnessDatabase.getAllUsers();
+            for (User user : users) {
+                System.out.println(user);
+            }
+        } else if (choice == 4) {
+            int userId = readInt(scanner, "Id пользователя: ");
+            List<WorkoutPlan> plans = FitnessDatabase.getWorkoutsByUserId(userId);
+            printPool(plans);
+        } else if (choice == 5) {
+            int userId = readInt(scanner, "Id пользователя: ");
+            double newWeight = readDouble(scanner, "Новый вес: ");
+            FitnessDatabase.updateUserWeight(userId, newWeight);
+        } else if (choice == 6) {
+            int workoutId = readInt(scanner, "Id тренировки: ");
+            FitnessDatabase.deleteWorkout(workoutId);
+        } else {
+            System.out.println("Некорректный выбор");
+        }
+    }
+
+    private static void saveUserToDatabase(User user) {
+        FitnessDatabase.saveUser(user);
+        for (WorkoutPlan plan : user.getWorkouts()) {
+            plan.setUserId(user.getId());
+            FitnessDatabase.saveWorkout(plan);
         }
     }
 }

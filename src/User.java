@@ -4,6 +4,7 @@ import java.util.Objects;
 
 public class User {
 
+    private int id;
     private int age;
     private double weight;
     private double height;
@@ -11,6 +12,7 @@ public class User {
     private List<WorkoutPlan> workouts;
 
     public User(int age, double weight, double height, String gender) {
+        this.id = 0;
         this.age = age;
         this.weight = weight;
         this.height = height;
@@ -18,12 +20,23 @@ public class User {
         this.workouts = new ArrayList<>();
     }
 
+    public User(int id, int age, double weight, double height, String gender) {
+        this.id = id;
+        this.age = age;
+        this.weight = weight;
+        this.height = height;
+        this.gender = gender;
+        this.workouts = new ArrayList<>();
+    }
+
+    public int getId() { return id; }
     public int getAge() { return age; }
     public double getWeight() { return weight; }
     public double getHeight() { return height; }
     public String getGender() { return gender; }
     public List<WorkoutPlan> getWorkouts() { return workouts; }
 
+    public void setId(int id) { this.id = id; }
     public void setAge(int age) { this.age = age; }
     public void setWeight(double weight) { this.weight = weight; }
     public void setHeight(double height) { this.height = height; }
@@ -43,7 +56,7 @@ public class User {
 
     @Override
     public String toString() {
-        return "User{age=" + age + ", weight=" + weight + ", height=" + height + ", gender=" + gender + "}";
+        return "User{id=" + id + ", age=" + age + ", weight=" + weight + ", height=" + height + ", gender=" + gender + "}";
     }
 
     @Override
