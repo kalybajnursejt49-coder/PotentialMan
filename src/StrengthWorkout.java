@@ -18,4 +18,9 @@ public class StrengthWorkout extends WorkoutPlan {
     public String getDetails() {
         return "sets=" + sets + ", reps=" + reps;
     }
+
+    @Override
+    public String getDetailsJson() {
+        return "\"sets\":" + sets + ",\"reps\":" + reps;
+    }
 }

@@ -30,6 +30,12 @@ public abstract class WorkoutPlan {
 
     public abstract String getDetails();
 
+    public abstract String getDetailsJson();
+
+    public String toJson() {
+        return "{\"id\":" + id + ",\"userId\":" + userId + ",\"type\":\"" + type + "\",\"duration\":" + duration + ",\"calories\":" + calories + "," + getDetailsJson() + "}";
+    }
+
     @Override
     public String toString() {
         return type + ", " + duration + " min, " + calories + " kcal, " + getDetails();

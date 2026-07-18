@@ -14,4 +14,9 @@ public class CardioWorkout extends WorkoutPlan {
     public String getDetails() {
         return "distance=" + distance + " km";
     }
+
+    @Override
+    public String getDetailsJson() {
+        return "\"distance\":" + distance;
+    }
 }

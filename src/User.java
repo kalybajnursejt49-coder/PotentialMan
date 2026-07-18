@@ -59,6 +59,10 @@ public class User {
         return "User{id=" + id + ", age=" + age + ", weight=" + weight + ", height=" + height + ", gender=" + gender + "}";
     }
 
+    public String toJson() {
+        return "{\"id\":" + id + ",\"age\":" + age + ",\"weight\":" + weight + ",\"height\":" + height + ",\"gender\":\"" + gender + "\"}";
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
