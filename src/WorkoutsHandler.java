@@ -11,6 +11,11 @@ public class WorkoutsHandler implements HttpHandler {
         String method = exchange.getRequestMethod();
         String path = exchange.getRequestURI().getPath();
 
+        if (method.equals("OPTIONS")) {
+            FitnessApiServer.handleOptions(exchange);
+            return;
+        }
+
         if (method.equals("POST") && path.equals("/workouts")) {
             handleCreateWorkout(exchange);
         } else if (method.equals("DELETE") && path.matches("/workouts/\\d+")) {

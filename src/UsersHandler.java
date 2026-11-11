@@ -2,87 +2,68 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.List;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class UsersHandler implements HttpHandler {
-
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-
-        if (method.equals("GET") && path.equals("/users")) {
-            handleGetAllUsers(exchange);
-        } else if (method.equals("GET") && path.matches("/users/\\d+/workouts")) {
-            int userId = extractId(path, "/users/", "/workouts");
-            handleGetUserWorkouts(exchange, userId);
-        } else if (method.equals("POST") && path.equals("/users")) {
-            handleCreateUser(exchange);
-        } else if (method.equals("PUT") && path.matches("/users/\\d+")) {
-            int userId = extractId(path, "/users/", "");
-            handleUpdateWeight(exchange, userId);
-        } else {
-            FitnessApiServer.sendResponse(exchange, 404, "{\"error\":\"not found\"}");
+        if (exchange.getRequestMethod().equals("OPTIONS")) {
+            FitnessApiServer.handleOptions(exchange);
+            return;
         }
-    }
-
-    private int extractId(String path, String prefix, String suffix) {
-        String idPart = path.substring(prefix.length());
-        if (!suffix.isEmpty()) {
-            idPart = idPart.substring(0, idPart.length() - suffix.length());
-        }
-        return Integer.parseInt(idPart);
-    }
-
-    private void handleGetAllUsers(HttpExchange exchange) throws IOException {
-        List<User> users = FitnessDatabase.getAllUsers();
-        StringBuilder json = new StringBuilder("[");
-        for (int i = 0; i < users.size(); i++) {
-            json.append(users.get(i).toJson());
-            if (i < users.size() - 1) {
-                json.append(",");
+        try {
+            String method = exchange.getRequestMethod();
+            String path = exchange.getRequestURI().getPath();
+            if (path.equals("/users") && method.equals("GET")) {
+                FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.users());
+            } else if (path.equals("/users") && method.equals("POST")) {
+                Map<String, Object> body = WebStore.object(WebJson.parse(FitnessApiServer.readBody(exchange)));
+                FitnessApiServer.sendJson(exchange, 201, FitnessApiServer.facade.saveUser(body, 0));
+            } else if (path.matches("/users/\\d+")) {
+                int id = Integer.parseInt(path.substring(7));
+                if (method.equals("GET")) FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.profile(id));
+                else if (method.equals("PUT")) {
+                    Map<String, Object> body = WebStore.object(WebJson.parse(FitnessApiServer.readBody(exchange)));
+                    FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.saveUser(body, id));
+                } else FitnessApiServer.sendError(exchange, 405, "Метод не поддерживается");
+            } else if (path.matches("/users/\\d+/templates")) {
+                int id = Integer.parseInt(path.split("/")[2]);
+                if (method.equals("GET")) FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.templates(id));
+                else if (method.equals("PUT")) {
+                    Map<String, Object> body = WebStore.object(WebJson.parse(FitnessApiServer.readBody(exchange)));
+                    FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.saveTemplate(id, body));
+                } else FitnessApiServer.sendError(exchange, 405, "Метод не поддерживается");
+            } else if (path.matches("/users/\\d+/templates/[^/]+/\\d+") && method.equals("DELETE")) {
+                String[] parts = path.split("/");
+                int id = Integer.parseInt(parts[2]);
+                int dayIndex = Integer.parseInt(parts[5]);
+                if (FitnessApiServer.facade.deleteTemplate(id, parts[4], dayIndex)) {
+                    FitnessApiServer.sendJson(exchange, 200, java.util.Collections.singletonMap("message", "Шаблон удалён"));
+                } else FitnessApiServer.sendError(exchange, 404, "Шаблон не найден");
+            } else if (path.matches("/users/\\d+/(history|workouts|recovery|nutrition)")) {
+                String[] parts = path.split("/");
+                int id = Integer.parseInt(parts[2]);
+                if (!method.equals("GET")) {
+                    FitnessApiServer.sendError(exchange, 405, "Метод не поддерживается");
+                } else if (parts[3].equals("history") || parts[3].equals("workouts")) {
+                    FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.history(id));
+                } else if (parts[3].equals("recovery")) {
+                    FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.recovery(id));
+                } else {
+                    String query = exchange.getRequestURI().getRawQuery();
+                    String goal = "maintain";
+                    if (query != null && query.startsWith("goal=")) goal = URLDecoder.decode(query.substring(5), StandardCharsets.UTF_8);
+                    FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.nutrition(id, goal));
+                }
+            } else {
+                FitnessApiServer.sendError(exchange, 404, "Адрес не найден");
             }
+        } catch (IllegalArgumentException e) {
+            FitnessApiServer.sendError(exchange, 400, e.getMessage());
+        } catch (Exception e) {
+            FitnessApiServer.sendError(exchange, 500, "Не удалось выполнить запрос");
         }
-        json.append("]");
-        FitnessApiServer.sendResponse(exchange, 200, json.toString());
-    }
-
-    private void handleGetUserWorkouts(HttpExchange exchange, int userId) throws IOException {
-        List<WorkoutPlan> plans = FitnessDatabase.getWorkoutsByUserId(userId);
-        StringBuilder json = new StringBuilder("[");
-        for (int i = 0; i < plans.size(); i++) {
-            json.append(plans.get(i).toJson());
-            if (i < plans.size() - 1) {
-                json.append(",");
-            }
-        }
-        json.append("]");
-        FitnessApiServer.sendResponse(exchange, 200, json.toString());
-    }
-
-    private void handleCreateUser(HttpExchange exchange) throws IOException {
-        String body = FitnessApiServer.readBody(exchange);
-        Map<String, String> data = JsonUtil.parse(body);
-
-        int age = Integer.parseInt(data.get("age"));
-        double weight = Double.parseDouble(data.get("weight"));
-        double height = Double.parseDouble(data.get("height"));
-        String gender = data.get("gender");
-
-        User user = new User(age, weight, height, gender);
-        FitnessDatabase.saveUser(user);
-
-        FitnessApiServer.sendResponse(exchange, 201, user.toJson());
-    }
-
-    private void handleUpdateWeight(HttpExchange exchange, int userId) throws IOException {
-        String body = FitnessApiServer.readBody(exchange);
-        Map<String, String> data = JsonUtil.parse(body);
-        double newWeight = Double.parseDouble(data.get("weight"));
-
-        FitnessDatabase.updateUserWeight(userId, newWeight);
-
-        FitnessApiServer.sendResponse(exchange, 200, "{\"message\":\"вес обновлён\"}");
     }
 }
