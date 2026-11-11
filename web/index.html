@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101511">
+  <title>PotentialMan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">P<span>↗</span></span><span class="brand-name">POTENTIAL<span>MAN</span></span></div>
+      <p class="sidebar-label">ТВОЙ ПУТЬ</p>
+      <nav class="navigation" aria-label="Главное меню">
+        <button class="nav-item active" type="button" data-page="profile"><span class="nav-icon">◉</span><span>Профиль</span><span class="nav-index">01</span></button>
+        <button class="nav-item" type="button" data-page="programs"><span class="nav-icon">▦</span><span>Программа</span><span class="nav-index">02</span></button>
+        <button class="nav-item" type="button" data-page="workout"><span class="nav-icon">✦</span><span>Тренировка</span><span class="nav-index">03</span></button>
+        <button class="nav-item" type="button" data-page="recovery"><span class="nav-icon">◷</span><span>Восстановление</span><span class="nav-index">04</span></button>
+        <button class="nav-item" type="button" data-page="nutrition"><span class="nav-icon">◴</span><span>Питание</span><span class="nav-index">05</span></button>
+        <button class="nav-item" type="button" data-page="history"><span class="nav-icon">▤</span><span>История</span><span class="nav-index">06</span></button>
+      </nav>
+      <div class="sidebar-bottom"><span class="online-dot"></span> PotentialMan <span class="version">Этап 7</span></div>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
+        <div class="breadcrumb">ПЛАТФОРМА <span>/</span> <strong id="breadcrumb-current">Профиль</strong></div>
+        <div class="topbar-right"><label class="user-picker">Пользователь <select id="user-select"><option value="">Новый профиль</option></select></label><span class="avatar">PM</span></div>
+      </header>
+
+      <main id="main-content">
+        <section class="page active" id="profile" aria-labelledby="profile-title">
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> НАЧАЛО ПУТИ / 01</div><h1 id="profile-title">Твой профиль<span class="accent">.</span></h1><p class="lead">Сохрани данные один раз — расчёты и тренировки будут связаны с твоим профилем.</p></div><span class="page-symbol" aria-hidden="true">01</span></div>
+          <div class="dashboard-grid">
+            <form class="panel profile-form" id="profile-form">
+              <div class="panel-heading"><div><span class="overline">ОСНОВА</span><h2>Данные о тебе</h2></div><span class="panel-icon">◉</span></div>
+              <div class="form-grid">
+                <label>Возраст, лет<input id="age" type="number" min="12" max="100" required placeholder="Например, 20"></label>
+                <label>Вес, кг<input id="weight" type="number" min="25" max="400" step="0.1" required placeholder="Например, 72"></label>
+                <label>Рост, см<input id="height" type="number" min="100" max="250" step="0.1" required placeholder="Например, 178"></label>
+                <label>Пол<select id="gender" required><option value="">Выбери пол</option><option value="M">Мужской</option><option value="F">Женский</option></select></label>
+                <label>Шагов в день, примерно<input id="steps-per-day" type="number" min="0" max="50000" step="500" value="0" required placeholder="Например, 7000"></label>
+                <label>Тренировок в неделю<input id="workouts-per-week" type="number" min="0" max="14" value="0" required placeholder="Например, 4"></label>
+                <label>Тяжесть тренировок<select id="training-intensity"><option value="light">Лёгкие</option><option value="moderate">Средние</option><option value="hard">Тяжёлые</option></select></label>
+                <label>Общая активность<select id="activity-level"><option value="auto">Подобрать по шагам и тренировкам</option><option value="rest">Почти без движения</option><option value="light">Лёгкая</option><option value="moderate">Средняя</option><option value="high">Высокая</option></select></label>
+              </div>
+              <p class="helper-text" id="activity-hint">Активность влияет на калории и белок. Можно выбрать уровень вручную или доверить подбору.</p>
+              <button class="primary-button" type="submit" id="save-profile">Сохранить профиль <span>↗</span></button>
+              <p class="helper-text">Чтобы создать ещё один профиль, выбери «Новый профиль» в верхнем меню.</p>
+            </form>
+            <div class="metric-stack">
+              <article class="metric-card"><span class="overline">ИНДЕКС МАССЫ ТЕЛА · BMI</span><div class="metric-number" id="bmi-number">—</div><span class="metric-tag" id="bmi-category">Заполни профиль</span></article>
+              <article class="metric-card"><span class="overline">ОБМЕН В ПОКОЕ · BMR</span><div class="metric-number"><span id="bmr-number">—</span><small>ккал / день</small></div><p>Примерное количество энергии, которое тело тратит в покое.</p></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="page" id="programs" aria-labelledby="programs-title" hidden>
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> ПЛАН ДЕЙСТВИЙ / 02</div><h1 id="programs-title">Программа<span class="accent">.</span></h1><p class="lead">Выбери удобное число тренировочных дней. Мы подсветим подходящий сплит.</p></div><span class="page-symbol" aria-hidden="true">02</span></div>
+          <div class="panel recommendation"><label>Сколько дней в неделю тренируешься?<input id="training-days" type="number" min="1" max="7" value="3"></label><button class="primary-button" id="recommend-button" type="button">Подобрать программу ↗</button><span id="recommend-text" class="helper-text">Выбери число дней от 1 до 7</span></div>
+          <div class="program-grid" id="program-list"></div>
+          <details class="panel custom-program" id="custom-program-panel"><summary>+ Создать свою программу</summary><p class="helper-text">Выбери дни недели и назови тренировку для каждого дня. Затем сохрани программу и назначь упражнения в конструкторе.</p><form id="custom-program-form"><label>Название программы<input id="custom-program-name" type="text" maxlength="40" required placeholder="Например, Мой план 4 дня"></label><div class="custom-days" id="custom-days"><label><input type="checkbox" data-weekday="1"> Понедельник <input type="text" data-day-name="1" maxlength="35" placeholder="Например, Верх" disabled></label><label><input type="checkbox" data-weekday="2"> Вторник <input type="text" data-day-name="2" maxlength="35" placeholder="Например, Низ" disabled></label><label><input type="checkbox" data-weekday="3"> Среда <input type="text" data-day-name="3" maxlength="35" placeholder="Название тренировки" disabled></label><label><input type="checkbox" data-weekday="4"> Четверг <input type="text" data-day-name="4" maxlength="35" placeholder="Например, Верх" disabled></label><label><input type="checkbox" data-weekday="5"> Пятница <input type="text" data-day-name="5" maxlength="35" placeholder="Например, Низ" disabled></label><label><input type="checkbox" data-weekday="6"> Суббота <input type="text" data-day-name="6" maxlength="35" placeholder="Название тренировки" disabled></label><label><input type="checkbox" data-weekday="7"> Воскресенье <input type="text" data-day-name="7" maxlength="35" placeholder="Название тренировки" disabled></label></div><button class="primary-button" type="submit">Сохранить программу ↗</button></form></details>
+        </section>
+
+        <section class="page" id="workout" aria-labelledby="workout-title" hidden>
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> СОБЕРИ СВОЁ / 03</div><h1 id="workout-title">Тренировка<span class="accent">.</span></h1><p class="lead">Добавляй упражнения, меняй подходы и сразу смотри нагрузку.</p></div><span class="page-symbol" aria-hidden="true">03</span></div>
+          <section class="panel weekly-panel"><div class="panel-heading"><div><span class="overline">ПЛАН НА НЕДЕЛЮ</span><h2 id="weekly-title">Выбери программу</h2></div><button class="secondary-button" id="open-programs" type="button">К программам ↗</button></div><p class="helper-text" id="weekly-hint">Сначала создай профиль и выбери программу. Затем назначь тренировку на каждый день.</p><div class="weekly-days" id="weekly-days"></div><div class="weekly-actions"><button class="primary-button" id="save-template" type="button" disabled>Сохранить для этого дня</button><button class="secondary-button" id="clear-builder" type="button">Очистить список</button><button class="secondary-button" id="delete-template" type="button" hidden>Удалить шаблон дня</button></div></section>
+          <div class="workout-grid">
+            <section class="panel catalog-panel"><div class="panel-heading"><div><span class="overline">01 / ВЫБЕРИ</span><h2>Каталог</h2></div><span class="panel-icon">⌕</span></div><input id="exercise-search" type="search" placeholder="Поиск упражнения"><select id="muscle-filter"><option value="">Все группы мышц</option><option>Грудь</option><option>Спина</option><option>Плечи</option><option>Бицепс</option><option>Трицепс</option><option>Пресс</option><option>Ноги</option></select><div class="catalog-list" id="exercise-list"></div></section>
+            <section class="panel builder-panel"><div class="panel-heading"><div><span class="overline">02 / НАСТРОЙ</span><h2>Моя тренировка</h2></div><span class="count-badge" id="exercise-count">0</span></div><div class="workout-meta"><label class="day-field">Название тренировки<input id="workout-day" type="text" maxlength="50" placeholder="Например, Толкай"></label><label class="day-field">Дата тренировки<input id="training-date" type="date" required></label></div><div id="selected-exercises" class="selected-list"><p class="empty-message">Добавь упражнение из каталога слева.</p></div><div class="builder-footer"><span>Примерно <strong id="workout-calories">0</strong> ккал</span><button class="primary-button" id="save-workout" type="button">Записать в историю ↗</button><p class="helper-text">Шаблон дня сохраняется кнопкой выше. Запись в историю отмечает выполненную тренировку за выбранную дату.</p></div></section>
+            <section class="panel load-panel"><div class="panel-heading"><div><span class="overline">03 / ОЦЕНИ</span><h2>Нагрузка</h2></div><span class="panel-icon">▥</span></div><div id="load-bars"></div><svg class="body-map" viewBox="0 0 160 260" role="img" aria-label="Карта нагрузки по мышцам"><circle cx="80" cy="23" r="17" fill="#3a493d"/><path data-muscle="shoulders" d="M48 48 L65 41 L69 65 L55 77 L42 66 Z M95 41 L112 48 L118 66 L105 77 L91 65 Z"/><path data-muscle="chest" d="M67 44 L93 44 L100 82 L80 88 L60 82 Z"/><path data-muscle="back" d="M62 84 L98 84 L96 116 L64 116 Z"/><path data-muscle="biceps" d="M42 69 L55 80 L45 113 L32 108 Z M105 80 L118 69 L128 108 L115 113 Z"/><path data-muscle="triceps" d="M32 110 L45 115 L35 147 L24 143 Z M115 115 L128 110 L136 143 L125 147 Z"/><path data-muscle="abs" d="M65 119 L95 119 L92 151 L68 151 Z"/><path data-muscle="legs" d="M66 155 L79 155 L77 242 L59 242 Z M81 155 L94 155 L101 242 L83 242 Z"/></svg><p class="helper-text">Цвет показывает нагрузку от низкой до высокой.</p><p class="warning-text" id="workout-warning" hidden></p></section>
+          </div>
+        </section>
+
+        <section class="page" id="recovery" aria-labelledby="recovery-title" hidden>
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> ВРЕМЯ ОТДЫХА / 04</div><h1 id="recovery-title">Восстановление<span class="accent">.</span></h1><p class="lead">После сохранения тренировки здесь видно, когда мышцы снова будут готовы.</p></div><span class="page-symbol" aria-hidden="true">04</span></div>
+          <div class="panel"><div class="panel-heading"><div><span class="overline">КАРТА ГОТОВНОСТИ</span><h2>Твои мышцы</h2></div><span class="panel-icon">◷</span></div><div class="recovery-grid" id="recovery-list"><p class="empty-message">Сначала создай профиль.</p></div></div>
+        </section>
+
+        <section class="page" id="nutrition" aria-labelledby="nutrition-title" hidden>
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> ЭНЕРГИЯ ДЛЯ ЦЕЛИ / 05</div><h1 id="nutrition-title">Питание<span class="accent">.</span></h1><p class="lead">Ориентир по калориям и БЖУ на день с учётом твоей цели.</p></div><span class="page-symbol" aria-hidden="true">05</span></div>
+          <div class="panel goal-panel"><span class="overline">ТВОЯ ЦЕЛЬ</span><div class="goal-options"><button class="goal-button" data-goal="gain" type="button">↗ Набор массы</button><button class="goal-button" data-goal="lose" type="button">↘ Похудение</button><button class="goal-button active" data-goal="maintain" type="button">→ Поддержка</button></div></div>
+          <div class="nutrition-grid"><article class="panel calorie-panel"><span class="overline">СУТОЧНАЯ НОРМА</span><div class="big-calories"><span id="nutrition-calories">—</span><small>ккал</small></div><p>Расчётная потребность на выбранную цель. <span id="activity-description"></span></p><div class="daily-stats"><div>Сожжено сегодня <strong id="burned-today">—</strong></div><div>Дневной ориентир* <strong id="remaining-calories">—</strong></div></div><p class="helper-text">* Активность уже учтена в норме. Сожжённые калории показаны отдельно; дневник еды не ведётся.</p></article><article class="panel macro-panel"><span class="overline">БЕЛКИ · ЖИРЫ · УГЛЕВОДЫ</span><div class="macro-wrap"><div class="macro-donut" id="macro-donut"><span>БЖУ</span></div><div class="macro-legend"><div><i class="protein"></i>Белки <strong id="protein">—</strong></div><div><i class="fat"></i>Жиры <strong id="fat">—</strong></div><div><i class="carbs"></i>Углеводы <strong id="carbs">—</strong></div></div></div><p class="helper-text" id="protein-explanation">Белок рассчитывается по весу и тяжести тренировок.</p></article></div>
+        </section>
+
+        <section class="page" id="history" aria-labelledby="history-title" hidden>
+          <div class="page-header compact"><div><div class="eyebrow"><span class="eyebrow-line"></span> ТВОЙ ПРОГРЕСС / 06</div><h1 id="history-title">История<span class="accent">.</span></h1><p class="lead">Все сохранённые тренировки в одном месте.</p></div><span class="page-symbol" aria-hidden="true">06</span></div>
+          <div id="history-list" class="history-list"><p class="empty-message">Сначала создай профиль.</p></div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="menu-backdrop" id="menu-backdrop" hidden></div>
+  <div class="loading" id="loading" hidden>Загрузка…</div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

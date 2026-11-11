@@ -38,21 +38,21 @@ public class WorkoutsHandler implements HttpHandler {
         WorkoutPlan plan;
         if (type.equalsIgnoreCase("Cardio")) {
             double distance = Double.parseDouble(data.get("distance"));
-            plan = new CardioWorkout(duration, calories, distance);
+            plan = FitnessApiServer.facade.createCardioWorkout(duration, calories, distance);
         } else {
             int sets = Integer.parseInt(data.get("sets"));
             int reps = Integer.parseInt(data.get("reps"));
-            plan = new StrengthWorkout(duration, calories, sets, reps);
+            plan = FitnessApiServer.facade.createStrengthWorkout(duration, calories, sets, reps);
         }
 
         plan.setUserId(userId);
-        FitnessDatabase.saveWorkout(plan);
+        FitnessApiServer.facade.saveLegacyWorkout(plan);
 
         FitnessApiServer.sendResponse(exchange, 201, plan.toJson());
     }
 
     private void handleDeleteWorkout(HttpExchange exchange, int workoutId) throws IOException {
-        FitnessDatabase.deleteWorkout(workoutId);
+        FitnessApiServer.facade.deleteLegacyWorkout(workoutId);
         FitnessApiServer.sendResponse(exchange, 200, "{\"message\":\"тренировка удалена\"}");
     }
 }
