@@ -8,14 +8,21 @@ import java.util.List;
 import java.util.Map;
 
 public class WebStore {
-    private final Path file = Path.of("data", "web-data.json");
+    private final Path file = Path.of(
+            System.getenv("POTENTIALMAN_DATA_DIR") == null ? "data" : System.getenv("POTENTIALMAN_DATA_DIR"),
+            "web-data.json");
     private final List<Object> users = new ArrayList<>();
     private final List<Object> workouts = new ArrayList<>();
     private final List<Object> templates = new ArrayList<>();
     private final List<Object> customPrograms = new ArrayList<>();
+    private final List<Object> journal = new ArrayList<>();
+    private final List<Object> strengthRecords = new ArrayList<>();
+    private final List<Object> strengthGoals = new ArrayList<>();
+    private final List<Object> bodyWeights = new ArrayList<>();
     private int nextUserId = 1;
     private int nextWorkoutId = 1;
     private int nextCustomProgramId = 1;
+    private int nextStrengthId = 1;
 
     public WebStore() throws IOException {
         if (Files.exists(file)) {
@@ -25,9 +32,14 @@ public class WebStore {
                 workouts.addAll(array(data.get("workouts")));
                 if (data.get("templates") != null) templates.addAll(array(data.get("templates")));
                 if (data.get("customPrograms") != null) customPrograms.addAll(array(data.get("customPrograms")));
+                if (data.get("journal") != null) journal.addAll(array(data.get("journal")));
+                if (data.get("strengthRecords") != null) strengthRecords.addAll(array(data.get("strengthRecords")));
+                if (data.get("strengthGoals") != null) strengthGoals.addAll(array(data.get("strengthGoals")));
+                if (data.get("bodyWeights") != null) bodyWeights.addAll(array(data.get("bodyWeights")));
                 nextUserId = number(data.get("nextUserId"));
                 nextWorkoutId = number(data.get("nextWorkoutId"));
                 if (data.get("nextCustomProgramId") != null) nextCustomProgramId = number(data.get("nextCustomProgramId"));
+                if (data.get("nextStrengthId") != null) nextStrengthId = number(data.get("nextStrengthId"));
             } catch (RuntimeException e) {
                 throw new IOException("Не удалось прочитать сохранённые данные", e);
             }
@@ -174,16 +186,163 @@ public class WebStore {
         return false;
     }
 
+    public synchronized List<Object> getJournal(int userId) {
+        List<Object> result = new ArrayList<>();
+        for (Object value : journal) {
+            Map<String, Object> entry = object(value);
+            if (number(entry.get("userId")) == userId) result.add(new LinkedHashMap<>(entry));
+        }
+        return result;
+    }
+
+    public synchronized Map<String, Object> saveJournal(Map<String, Object> entry) throws IOException {
+        for (int i = 0; i < journal.size(); i++) {
+            Map<String, Object> old = object(journal.get(i));
+            if (number(old.get("userId")) == number(entry.get("userId"))
+                    && String.valueOf(old.get("date")).equals(String.valueOf(entry.get("date")))) {
+                journal.set(i, new LinkedHashMap<>(entry));
+                write();
+                return new LinkedHashMap<>(entry);
+            }
+        }
+        journal.add(new LinkedHashMap<>(entry));
+        write();
+        return new LinkedHashMap<>(entry);
+    }
+
+    public synchronized boolean deleteJournal(int userId, String date) throws IOException {
+        for (int i = 0; i < journal.size(); i++) {
+            Map<String, Object> entry = object(journal.get(i));
+            if (number(entry.get("userId")) == userId && date.equals(entry.get("date"))) {
+                journal.remove(i);
+                write();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized List<Object> getStrengthRecords(int userId) {
+        List<Object> result = new ArrayList<>();
+        for (Object value : strengthRecords) {
+            Map<String, Object> item = object(value);
+            if (number(item.get("userId")) == userId) result.add(new LinkedHashMap<>(item));
+        }
+        return result;
+    }
+
+    public synchronized Map<String, Object> saveStrengthRecord(Map<String, Object> data) throws IOException {
+        Map<String, Object> record = new LinkedHashMap<>(data);
+        record.put("id", nextStrengthId++);
+        strengthRecords.add(record);
+        write();
+        return new LinkedHashMap<>(record);
+    }
+
+    public synchronized Map<String, Object> updateStrengthRecord(int userId, int id, Map<String, Object> data) throws IOException {
+        for (int i = 0; i < strengthRecords.size(); i++) {
+            Map<String, Object> old = object(strengthRecords.get(i));
+            if (number(old.get("userId")) == userId && number(old.get("id")) == id) {
+                Map<String, Object> updated = new LinkedHashMap<>(data);
+                updated.put("id", id);
+                strengthRecords.set(i, updated);
+                write();
+                return new LinkedHashMap<>(updated);
+            }
+        }
+        return null;
+    }
+
+    public synchronized List<Object> getBodyWeights(int userId) {
+        List<Object> result = new ArrayList<>();
+        for (Object value : bodyWeights) {
+            Map<String, Object> item = object(value);
+            if (number(item.get("userId")) == userId) result.add(new LinkedHashMap<>(item));
+        }
+        return result;
+    }
+
+    public synchronized Map<String, Object> saveBodyWeight(int userId, String date, double weightKg) throws IOException {
+        Map<String, Object> record = new LinkedHashMap<>();
+        record.put("userId", userId);
+        record.put("date", date);
+        record.put("weightKg", weightKg);
+        for (int i = 0; i < bodyWeights.size(); i++) {
+            Map<String, Object> old = object(bodyWeights.get(i));
+            if (number(old.get("userId")) == userId && date.equals(old.get("date"))) {
+                bodyWeights.set(i, record);
+                write();
+                return new LinkedHashMap<>(record);
+            }
+        }
+        bodyWeights.add(record);
+        write();
+        return new LinkedHashMap<>(record);
+    }
+
+    public synchronized boolean deleteBodyWeight(int userId, String date) throws IOException {
+        for (int i = 0; i < bodyWeights.size(); i++) {
+            Map<String, Object> item = object(bodyWeights.get(i));
+            if (number(item.get("userId")) == userId && date.equals(item.get("date"))) {
+                bodyWeights.remove(i);
+                write();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean deleteStrengthRecord(int userId, int id) throws IOException {
+        for (int i = 0; i < strengthRecords.size(); i++) {
+            Map<String, Object> record = object(strengthRecords.get(i));
+            if (number(record.get("userId")) == userId && number(record.get("id")) == id) {
+                strengthRecords.remove(i);
+                write();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized List<Object> getStrengthGoals(int userId) {
+        List<Object> result = new ArrayList<>();
+        for (Object value : strengthGoals) {
+            Map<String, Object> item = object(value);
+            if (number(item.get("userId")) == userId) result.add(new LinkedHashMap<>(item));
+        }
+        return result;
+    }
+
+    public synchronized Map<String, Object> saveStrengthGoal(Map<String, Object> data) throws IOException {
+        for (int i = 0; i < strengthGoals.size(); i++) {
+            Map<String, Object> old = object(strengthGoals.get(i));
+            if (number(old.get("userId")) == number(data.get("userId"))
+                    && String.valueOf(old.get("exerciseId")).equals(String.valueOf(data.get("exerciseId")))) {
+                strengthGoals.set(i, new LinkedHashMap<>(data));
+                write();
+                return new LinkedHashMap<>(data);
+            }
+        }
+        strengthGoals.add(new LinkedHashMap<>(data));
+        write();
+        return new LinkedHashMap<>(data);
+    }
+
     private void write() throws IOException {
         Files.createDirectories(file.getParent());
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("nextUserId", nextUserId);
         data.put("nextWorkoutId", nextWorkoutId);
         data.put("nextCustomProgramId", nextCustomProgramId);
+        data.put("nextStrengthId", nextStrengthId);
         data.put("users", users);
         data.put("workouts", workouts);
         data.put("templates", templates);
         data.put("customPrograms", customPrograms);
+        data.put("journal", journal);
+        data.put("strengthRecords", strengthRecords);
+        data.put("strengthGoals", strengthGoals);
+        data.put("bodyWeights", bodyWeights);
         Path temp = file.resolveSibling("web-data.tmp");
         Files.writeString(temp, WebJson.stringify(data), StandardCharsets.UTF_8);
         try {

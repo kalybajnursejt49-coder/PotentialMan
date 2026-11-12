@@ -22,11 +22,18 @@ public class WorkoutBuilder {
     }
 
     public void addExercise(String[] definition, int sets, int reps, boolean dropSet,
-                            boolean superSet, boolean heavyWeight) {
-        if (sets < 1 || sets > 10 || reps < 1 || reps > 50) {
+                            boolean superSet, boolean heavyWeight, double weightKg, List<Object> setSeconds) {
+        boolean timed = definition.length > 5 && definition[5].equals("time");
+        if (timed && (sets != 1 || reps < 1 || reps > 180)) {
+            throw new IllegalArgumentException("Для кардио укажите от 1 до 180 минут");
+        }
+        if (!timed && (sets < 1 || sets > 10 || reps < 1 || reps > 50)) {
             throw new IllegalArgumentException("Подходы: 1–10, повторения: 1–50");
         }
-        ExerciseComponent exercise = new BasicExercise(definition[0], definition[3], definition[4], sets, reps);
+        if (timed && (dropSet || superSet || heavyWeight)) {
+            throw new IllegalArgumentException("Модификаторы доступны только для силовых упражнений");
+        }
+        ExerciseComponent exercise = new BasicExercise(definition[0], definition[3], definition[4], sets, reps, timed);
         if (dropSet) exercise = new DropSetDecorator(exercise);
         if (superSet) exercise = new SuperSetDecorator(exercise);
         if (heavyWeight) exercise = new HeavyWeightDecorator(exercise);
@@ -38,6 +45,9 @@ public class WorkoutBuilder {
         item.put("group", definition[2]);
         item.put("sets", sets);
         item.put("reps", reps);
+        item.put("weightKg", weightKg);
+        item.put("setSeconds", new ArrayList<>(setSeconds));
+        item.put("unit", timed ? "minutes" : "reps");
         item.put("dropSet", dropSet);
         item.put("superSet", superSet);
         item.put("heavyWeight", heavyWeight);

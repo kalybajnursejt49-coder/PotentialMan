@@ -41,6 +41,10 @@ public class StaticFileHandler implements HttpHandler {
             contentType = "text/javascript; charset=utf-8";
         } else if (fileName.endsWith(".svg")) {
             contentType = "image/svg+xml";
+        } else if (fileName.endsWith(".webmanifest")) {
+            contentType = "application/manifest+json; charset=utf-8";
+        } else if (fileName.endsWith(".png")) {
+            contentType = "image/png";
         } else {
             FitnessApiServer.sendResponse(exchange, 404, "{\"error\":\"not found\"}");
             return;

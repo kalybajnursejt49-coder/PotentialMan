@@ -12,17 +12,20 @@ class BasicExercise implements ExerciseComponent {
     private final String secondaryMuscle;
     private final int sets;
     private final int reps;
+    private final boolean timed;
 
-    public BasicExercise(String id, String primaryMuscle, String secondaryMuscle, int sets, int reps) {
+    public BasicExercise(String id, String primaryMuscle, String secondaryMuscle, int sets, int reps, boolean timed) {
         this.id = id;
         this.primaryMuscle = primaryMuscle;
         this.secondaryMuscle = secondaryMuscle;
         this.sets = sets;
         this.reps = reps;
+        this.timed = timed;
     }
 
     public Map<String, Double> getLoad() {
-        double factor = sets * reps / 30.0;
+        double factor = timed ? reps / 20.0 : sets * reps / 30.0;
+        if (timed && (id.equals("stretching") || id.equals("mobility") || id.equals("foam_rolling"))) factor *= 0.4;
         if (id.startsWith("weighted_")) factor *= 1.25;
         Map<String, Double> result = new LinkedHashMap<>();
         result.put(primaryMuscle, factor * 2.2);
@@ -30,7 +33,15 @@ class BasicExercise implements ExerciseComponent {
         return result;
     }
 
-    public int getCalories() { return Math.round((float) (sets * reps * 1.2)); }
+    public int getCalories() {
+        if (timed) {
+            int perMinute = id.equals("run_intervals") || id.equals("jump_rope") ? 9 :
+                    id.equals("run_easy") ? 7 : id.equals("walk_fast") ? 4 :
+                    id.equals("stretching") || id.equals("mobility") || id.equals("foam_rolling") ? 2 : 6;
+            return reps * perMinute;
+        }
+        return Math.round((float) (sets * reps * 1.2));
+    }
 }
 
 abstract class ExerciseDecorator implements ExerciseComponent {

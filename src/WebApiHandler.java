@@ -23,8 +23,10 @@ public class WebApiHandler implements HttpHandler {
             } else if (path.equals("/programs/split") && method.equals("GET")) {
                 String query = exchange.getRequestURI().getQuery();
                 if (query == null || !query.startsWith("days=")) throw new IllegalArgumentException("Укажите число дней");
-                int days = Integer.parseInt(query.substring(5));
-                FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.recommend(days));
+                String[] values = query.split("&");
+                int days = Integer.parseInt(values[0].substring(5));
+                String goal = values.length > 1 && values[1].startsWith("goal=") ? values[1].substring(5) : "strength";
+                FitnessApiServer.sendJson(exchange, 200, FitnessApiServer.facade.recommend(days, goal));
             } else if (path.equals("/programs/custom") && method.equals("POST")) {
                 Map<String, Object> body = WebStore.object(WebJson.parse(FitnessApiServer.readBody(exchange)));
                 FitnessApiServer.sendJson(exchange, 201, FitnessApiServer.facade.saveCustomProgram(body));

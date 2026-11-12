@@ -1,4 +1,5 @@
 import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpContext;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -11,16 +12,26 @@ public class FitnessApiServer {
 
     public static void main(String[] args) throws IOException {
         facade = new FitnessFacade(new WebStore());
-        int port = Integer.getInteger("potentialman.port", 8080);
+        String cloudPort = System.getenv("PORT");
+        int port = cloudPort == null ? Integer.getInteger("potentialman.port", 8080) : Integer.parseInt(cloudPort);
+        String accessPassword = System.getenv("POTENTIALMAN_ACCESS_PASSWORD");
+        if (cloudPort != null && (accessPassword == null || accessPassword.isBlank())) {
+            throw new IllegalStateException("Set POTENTIALMAN_ACCESS_PASSWORD before publishing the server");
+        }
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        server.createContext("/users", new UsersHandler());
-        server.createContext("/workouts", new WorkoutsHandler());
-        server.createContext("/workouts/build", new WebApiHandler());
-        server.createContext("/workouts/built", new WebApiHandler());
-        server.createContext("/programs", new WebApiHandler());
-        server.createContext("/exercises", new WebApiHandler());
-        server.createContext("/", new StaticFileHandler());
+        HttpContext[] contexts = {
+                server.createContext("/users", new UsersHandler()),
+                server.createContext("/workouts", new WorkoutsHandler()),
+                server.createContext("/workouts/build", new WebApiHandler()),
+                server.createContext("/workouts/built", new WebApiHandler()),
+                server.createContext("/programs", new WebApiHandler()),
+                server.createContext("/exercises", new WebApiHandler()),
+                server.createContext("/", new StaticFileHandler())
+        };
+        if (accessPassword != null && !accessPassword.isBlank()) {
+            for (HttpContext context : contexts) context.getFilters().add(new AccessFilter(accessPassword));
+        }
 
         server.setExecutor(null);
         server.start();
