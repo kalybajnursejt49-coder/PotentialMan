@@ -1,4 +1,4 @@
-var names = {profile: "Профиль", programs: "Программа", workout: "Тренировка", recovery: "Восстановление", nutrition: "Питание", history: "История", progress: "Прогресс"};
+var names = {profile: "Профиль", programs: "Программа", workout: "Тренировка", recovery: "Восстановление", nutrition: "Дневник", history: "История", progress: "Прогресс"};
 var muscleNames = {chest: "Грудь", back: "Спина", shoulders: "Плечи", biceps: "Бицепс", triceps: "Трицепс", abs: "Пресс", legs: "Ноги"};
 var programs = [];
 var templates = [];
@@ -89,6 +89,9 @@ function showPage(pageId, saveHistory) {
     else buttons[j].removeAttribute("aria-current");
   }
   element("breadcrumb-current").textContent = names[pageId];
+  var mobileButtons = document.querySelectorAll("[data-mobile-page]");
+  for (var k = 0; k < mobileButtons.length; k++) mobileButtons[k].classList.toggle("active", mobileButtons[k].getAttribute("data-mobile-page") === pageId);
+  element("mobile-timer-dock").hidden = pageId !== "workout" || selectedExercises.length === 0;
   document.title = names[pageId] + " — PotentialMan";
   if (location.hash !== "#" + pageId) {
     if (saveHistory) history.pushState(null, "", "#" + pageId);
@@ -522,6 +525,11 @@ function renderWorkoutTimer() {
     if (values.length) results += '<div><strong>' + escapeText(selectedExercises[i].name) + '</strong><span>' + values.join(" · ") + '</span></div>';
   }
   element("timer-results").innerHTML = results;
+  element("mobile-timer-name").textContent = item ? item.name + " · " + timerState.set + "/" + item.sets : "Таймер";
+  element("mobile-timer-time").textContent = timerState.phase === "rest" ? element("timer-rest-clock").textContent : element("timer-clock").textContent;
+  element("mobile-timer-action").textContent = timerState.phase === "work" ? "Стоп" : timerState.phase === "rest" ? "Пропустить" : "Старт";
+  element("mobile-timer-action").disabled = !item;
+  element("mobile-timer-dock").hidden = element("workout").hidden || selectedExercises.length === 0;
 }
 
 function resetWorkoutTimer() {
@@ -582,6 +590,8 @@ function tickWorkoutTimer() {
     element("timer-rest-clock").textContent = clockText(remaining);
     if (remaining === 0) { skipWorkoutRest(); playTimerSound(); toast("Отдых закончен. Начни следующий подход."); }
   }
+  if (timerState.phase === "work") element("mobile-timer-time").textContent = element("timer-clock").textContent;
+  if (timerState.phase === "rest") element("mobile-timer-time").textContent = element("timer-rest-clock").textContent;
 }
 
 function prepareTimerAudio() {
@@ -839,7 +849,8 @@ function handleSleepHistoryClick(event) {
   if (edit) {
     element("sleep-date").value = edit.getAttribute("data-edit-sleep");
     fillJournalForms();
-    showPage("recovery", true);
+    showPage("nutrition", true);
+    element("sleep-form").scrollIntoView({behavior: "smooth", block: "start"});
     element("sleep-hours").focus();
     return;
   }
@@ -1226,6 +1237,29 @@ function repeatWorkout(id) {
 var navButtons = document.querySelectorAll(".nav-item");
 for (var i = 0; i < navButtons.length; i++) {
   navButtons[i].addEventListener("click", function () { showPage(this.getAttribute("data-page"), true); });
+}
+var mobileNavButtons = document.querySelectorAll("[data-mobile-page]");
+for (var i = 0; i < mobileNavButtons.length; i++) {
+  mobileNavButtons[i].addEventListener("click", function () { showPage(this.getAttribute("data-mobile-page"), true); });
+}
+element("mobile-more").addEventListener("click", openMenu);
+element("mobile-timer-action").addEventListener("click", function () {
+  if (timerState.phase === "work") element("timer-stop").click();
+  else if (timerState.phase === "rest") element("timer-skip").click();
+  else element("timer-start").click();
+});
+element("mobile-timer-more").addEventListener("click", function () {
+  document.querySelector(".timer-panel").open = true;
+  document.querySelector(".timer-panel").scrollIntoView({behavior: "smooth", block: "start"});
+});
+var diaryButtons = document.querySelectorAll("[data-jump]");
+for (var i = 0; i < diaryButtons.length; i++) {
+  diaryButtons[i].addEventListener("click", function () {
+    var target = element(this.getAttribute("data-jump"));
+    var details = target.closest("details");
+    if (details) details.open = true;
+    target.scrollIntoView({behavior: "smooth", block: "start"});
+  });
 }
 element("menu-toggle").addEventListener("click", function () { if (element("sidebar").classList.contains("open")) closeMenu(); else openMenu(); });
 element("menu-backdrop").addEventListener("click", closeMenu);
